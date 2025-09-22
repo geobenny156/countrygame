@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Naming Game — Play</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Play</h1>
+      <p class="subtitle">Good luck, <span id="playerName">—</span>!</p>
+    </header>
+
+    <section id="game" class="card">
+      <div class="roombar">
+        <div>Mode: <strong id="modeLabel">—</strong></div>
+        <div>Topic: <strong id="topicLabel">—</strong></div>
+        <div>Per-turn: <strong id="perTurnLabel">—</strong>s</div>
+        <div id="roomCodeWrap" class="hidden">Room: <strong id="roomCodeLabel">—</strong></div>
+        <div class="spacer"></div>
+        <button id="btnLeave" class="secondary">Leave Game</button>
+      </div>
+
+      <div id="searchBox" class="card" style="background:#0b1220; border-color:#0b1220;">
+        <div id="searchMsg" class="hint">Preparing game…</div>
+        <div class="row" style="margin-top:8px;">
+          <button id="btnCancel" class="secondary hidden">Cancel</button>
+        </div>
+      </div>
+
+      <div class="columns">
+        <div class="left">
+          <h3>Players</h3>
+          <ul id="players"></ul>
+
+          <!-- Host controls (private room lobby) -->
+          <div id="hostPanel" class="hidden" style="margin-top:12px; border:1px solid var(--border); border-radius:8px; padding:12px; background:#0b1220;">
+            <h3>Host controls</h3>
+            <label>Seconds per turn</label>
+            <input id="perTurnInput" type="number" value="15" min="5" max="120" />
+            <label>Topic</label>
+            <select id="hostTopic">
+              <option value="countries">Countries</option>
+              <option value="capitals">Capitals</option>
+              <option value="currencies">Currencies</option>
+              <option value="dog_breeds">Dog Breeds</option>
+            </select>
+            <div class="row" style="margin-top:8px;">
+              <button id="btnStart" class="primary">Start Game</button>
+              <button id="btnReset" class="secondary">Reset to Lobby</button>
+            </div>
+            <div class="hint" style="margin-top:6px;">Share the room code above so friends can join.</div>
+          </div>
+        </div>
+
+        <div class="right">
+          <div class="turnbox">
+            <div>Current turn: <strong id="currentName">—</strong></div>
+            <div class="timer"><span id="timer">—</span></div>
+          </div>
+
+          <div id="answerBox" class="answer">
+            <input id="answerInput" type="text" placeholder="Type an answer..." disabled />
+            <button id="btnSubmit" disabled>Submit</button>
+          </div>
+          <div id="answerHint" class="hint"></div>
+
+          <div class="used" style="margin-top:12px;">
+            <h3>Used Answers</h3>
+            <div id="usedList" class="chips"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div id="resultOverlay" class="overlay hidden">
+      <div class="overlay-card">
+        <h2 id="resultTitle">Result</h2>
+        <div id="scoreboard"></div>
+        <div class="row" style="margin-top:10px; gap:8px;">
+          <button id="btnReturnLobby" class="secondary">Return to Lobby</button>
+          <button id="btnPlayAgain" class="primary">Back to Home</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

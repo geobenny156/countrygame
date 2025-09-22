@@ -1,0 +1,15 @@
+{
+  "name": "country-game",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Turn-based naming game (multi-page) with Solo, Quick Match, and Private Rooms",
+  "scripts": {
+    "start": "node server.js",
+    "build:data": "node public/scripts/fetch-data.js"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.12",
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5"
+  }
+}

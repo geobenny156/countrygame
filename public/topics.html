@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Naming Game — Topics</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Select a Topic</h1>
+      <p class="subtitle">Choose what you’ll be naming.</p>
+    </header>
+
+    <section class="card">
+      <div class="grid" id="topicGrid">
+        <div class="tile" data-key="countries" data-label="Countries">🌍 Countries</div>
+        <div class="tile" data-key="capitals" data-label="Capitals">🏛️ Capitals</div>
+        <div class="tile" data-key="currencies" data-label="Currencies">💱 Currencies</div>
+        <div class="tile" data-key="dog_breeds" data-label="Dog Breeds">🐶 Dog Breeds</div>
+      </div>
+      <div class="row" style="margin-top:12px;">
+        <button id="backHome" class="secondary">← Back</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="js/nav.js"></script>
+  <script>
+    NG.requireNameOrRedirect('index.html');
+    document.getElementById('backHome').addEventListener('click', () => history.back());
+
+    document.getElementById('topicGrid').addEventListener('click', (e) => {
+      const tile = e.target.closest('.tile');
+      if (!tile) return;
+      NG.setTopic(tile.dataset.key, tile.dataset.label);
+      location.href = 'rules.html';
+    });
+  </script>
+</body>
+</html>
