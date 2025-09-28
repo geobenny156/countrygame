@@ -1,47 +1,42 @@
-// NG = helper namespace for navigation + stored settings
-window.NG = (function () {
-  const kName = 'ng_name';
-  const kTopicKey = 'ng_topic_key';
-  const kTopicLabel = 'ng_topic_label';
-  const kMode = 'ng_mode';
-  const kPerTurn = 'ng_perturn';
-  const kOpp = 'ng_opponents';
-  const kRoomAction = 'ng_room_action'; // 'create' | 'join' | ''
-  const kRoomCode = 'ng_room_code';
+// NG: small navigation/storage helper used across pages
+window.NG = (() => {
+  const K_NAME   = 'ng:name';
+  const K_TOPIC  = 'ng:topic';
+  const K_TLABEL = 'ng:topicLabel';
+  const K_RULES  = 'ng:rules';
 
-  // Name is session-only (clear on tab close). Also clear any old localStorage name.
-  try { localStorage.removeItem(kName); } catch {}
-  function setName(name) { sessionStorage.setItem(kName, name); }
-  function getName() { return sessionStorage.getItem(kName) || ''; }
+  // --- Display name (guest or signed-in) ---
+  function setName(name)  { localStorage.setItem(K_NAME, String(name || '').trim()); }
+  function getName()      { return localStorage.getItem(K_NAME) || null; }
+  function clearName()    { localStorage.removeItem(K_NAME); }
 
-  function setTopic(key, label) { localStorage.setItem(kTopicKey, key); localStorage.setItem(kTopicLabel, label); }
-  function getTopicKey() { return localStorage.getItem(kTopicKey) || 'countries'; }
-  function getTopicLabel() { return localStorage.getItem(kTopicLabel) || 'Countries'; }
-
-  function setRules({ mode, perTurn, opponents, roomAction, roomCode }) {
-    localStorage.setItem(kMode, mode || 'pvp');
-    localStorage.setItem(kPerTurn, String(perTurn || 15));
-    localStorage.setItem(kOpp, String(opponents || 3));
-    localStorage.setItem(kRoomAction, roomAction || '');
-    localStorage.setItem(kRoomCode, roomCode || '');
-  }
-  function getRules() {
-    return {
-      mode: localStorage.getItem(kMode) || 'pvp',
-      perTurn: Number(localStorage.getItem(kPerTurn) || 15),
-      opponents: Number(localStorage.getItem(kOpp) || 3),
-      roomAction: localStorage.getItem(kRoomAction) || '',
-      roomCode: localStorage.getItem(kRoomCode) || ''
-    };
+  // Redirect to the new account page if no name is set yet
+  function requireNameOrRedirect(redirectTo = 'account.html') {
+    const n = getName();
+    if (!n) location.href = redirectTo;
   }
 
-  function requireNameOrRedirect(url) { if (!getName()) location.href = url; }
-  function requireTopicOrRedirect(url) { if (!getTopicKey()) location.href = url; }
+  // --- Topic selection ---
+  function setTopic(key, label) {
+    localStorage.setItem(K_TOPIC, String(key || '').trim());
+    localStorage.setItem(K_TLABEL, String(label || key || '').trim());
+  }
+  function getTopicKey()   { return localStorage.getItem(K_TOPIC) || null; }
+  function getTopicLabel() { return localStorage.getItem(K_TLABEL) || null; }
+  function clearTopic()    { localStorage.removeItem(K_TOPIC); localStorage.removeItem(K_TLABEL); }
+
+  function requireTopicOrRedirect(redirectTo = 'topics.html') {
+    if (!getTopicKey()) location.href = redirectTo;
+  }
+
+  // --- Rules (mode, perTurn, etc.) ---
+  function setRules(obj)  { localStorage.setItem(K_RULES, JSON.stringify(obj || {})); }
+  function getRules()     { try { return JSON.parse(localStorage.getItem(K_RULES) || '{}'); } catch { return {}; } }
+  function clearRules()   { localStorage.removeItem(K_RULES); }
 
   return {
-    setName, getName,
-    setTopic, getTopicKey, getTopicLabel,
-    setRules, getRules,
-    requireNameOrRedirect, requireTopicOrRedirect
+    setName, getName, clearName, requireNameOrRedirect,
+    setTopic, getTopicKey, getTopicLabel, clearTopic, requireTopicOrRedirect,
+    setRules, getRules, clearRules
   };
 })();

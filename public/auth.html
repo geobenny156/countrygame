@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Account — Naming Game</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Account</h1>
+      <p class="subtitle">Sign in or create an account to save your scores.</p>
+    </header>
+
+    <section class="card">
+      <div class="columns">
+        <div>
+          <h3>Create account</h3>
+          <label>Display name</label>
+          <input id="su_name" type="text" placeholder="e.g., Alex" />
+          <label>Email</label>
+          <input id="su_email" type="email" placeholder="you@example.com" />
+          <label>Password</label>
+          <input id="su_pass" type="password" placeholder="At least 6 characters" />
+          <div class="row" style="margin-top:12px;">
+            <button id="btnSignup" class="primary">Create account</button>
+          </div>
+        </div>
+
+        <div>
+          <h3>Sign in</h3>
+          <label>Email</label>
+          <input id="li_email" type="email" placeholder="you@example.com" />
+          <label>Password</label>
+          <input id="li_pass" type="password" placeholder="Your password" />
+          <div class="row" style="margin-top:12px;">
+            <button id="btnLogin" class="primary">Sign in</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="msg" class="hint" style="margin-top:12px;"></div>
+      <div class="row" style="margin-top:12px;">
+        <button id="backHome" class="secondary">← Back</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    $('backHome').onclick = () => history.back();
+
+    async function post(url, data) {
+      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      return res.json();
+    }
+    function show(msg, good=false) {
+      const el = $('msg'); el.textContent = msg || '';
+      el.style.color = good ? '#10b981' : '#9ca3af';
+    }
+
+    $('btnSignup').onclick = async () => {
+      const displayName = $('su_name').value.trim();
+      const email = $('su_email').value.trim();
+      const password = $('su_pass').value;
+      show('Creating account…');
+      const r = await post('/api/auth/signup', { displayName, email, password });
+      if (r.ok) { show('Account created. Redirecting…', true); setTimeout(()=>location.href='index.html', 400); }
+      else show(r.error || 'Failed.');
+    };
+
+    $('btnLogin').onclick = async () => {
+      const email = $('li_email').value.trim();
+      const password = $('li_pass').value;
+      show('Signing in…');
+      const r = await post('/api/auth/login', { email, password });
+      if (r.ok) { show('Signed in. Redirecting…', true); setTimeout(()=>location.href='index.html', 400); }
+      else show(r.error || 'Failed.');
+    };
+  </script>
+</body>
+</html>

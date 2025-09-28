@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Naming Game — Choose how to play</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .tabs { display:flex; gap:8px; margin-top:10px; }
+    .tabs button { cursor:pointer; }
+    .pane.hidden { display:none !important; }
+    .error { color:#fda4af; margin-top:6px; min-height:18px; }
+    .ok { color:#86efac; margin-top:6px; min-height:18px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Choose how to play</h1>
+      <p class="subtitle">Play as a guest or sign in to save scores.</p>
+    </header>
+
+    <section class="card">
+      <!-- Guest -->
+      <h3>Play as Guest</h3>
+      <div class="row" style="gap:8px;">
+        <input id="guestName" type="text" placeholder="Display name" maxlength="24"
+               autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />
+        <button id="btnGuest" class="primary">Continue</button>
+      </div>
+      <div id="guestMsg" class="error"></div>
+
+      <hr style="margin:16px 0;"/>
+
+      <!-- Account -->
+      <h3>Sign in / Sign up</h3>
+      <div class="tabs">
+        <button id="tabSignIn"  class="secondary">Sign in</button>
+        <button id="tabSignUp"  class="secondary">Sign up</button>
+      </div>
+
+      <!-- Sign in pane -->
+      <div id="paneSignIn" class="pane">
+        <label style="margin-top:10px;">Email</label>
+        <input id="siEmail" type="email" placeholder="you@example.com" />
+        <label style="margin-top:6px;">Password</label>
+        <input id="siPass" type="password" placeholder="••••••••" />
+        <div class="row" style="gap:8px; margin-top:10px;">
+          <button id="btnSignIn" class="primary">Sign in</button>
+          <button id="btnSignOut" class="secondary hidden">Sign out</button>
+          <button id="btnContinueAs" class="secondary hidden">Continue as <span id="signedInName">—</span></button>
+        </div>
+        <div id="siMsg" class="error"></div>
+      </div>
+
+      <!-- Sign up pane -->
+      <div id="paneSignUp" class="pane hidden">
+        <label style="margin-top:10px;">Display name</label>
+        <input id="suName" type="text" placeholder="Display name" maxlength="24"
+               autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />
+        <label style="margin-top:6px;">Email</label>
+        <input id="suEmail" type="email" placeholder="you@example.com" />
+        <label style="margin-top:6px;">Password <small>(min 6)</small></label>
+        <input id="suPass" type="password" placeholder="••••••••" />
+        <div class="row" style="gap:8px; margin-top:10px;">
+          <button id="btnSignUp" class="primary">Create account</button>
+        </div>
+        <div id="suMsg" class="error"></div>
+      </div>
+
+      <div class="row" style="margin-top:16px;">
+        <button id="btnBack" class="secondary">← Back</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="js/nav.js"></script>
+  <script>
+    // Tabs
+    const tabSignIn  = document.getElementById('tabSignIn');
+    const tabSignUp  = document.getElementById('tabSignUp');
+    const paneSignIn = document.getElementById('paneSignIn');
+    const paneSignUp = document.getElementById('paneSignUp');
+
+    function showPane(which) {
+      paneSignIn.classList.toggle('hidden', which !== 'in');
+      paneSignUp.classList.toggle('hidden', which !== 'up');
+    }
+    tabSignIn.addEventListener('click', () => showPane('in'));
+    tabSignUp.addEventListener('click', () => showPane('up'));
+    showPane('in');
+
+    // Guest flow
+    const guestName = document.getElementById('guestName');
+    const btnGuest  = document.getElementById('btnGuest');
+    const guestMsg  = document.getElementById('guestMsg');
+
+    async function validateName(name) {
+      try {
+        const r = await fetch('/api/name/validate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+        const j = await r.json();
+        return !!(j && j.valid);
+      } catch { return false; }
+    }
+
+    btnGuest.addEventListener('click', async () => {
+      guestMsg.textContent = '';
+      const n = (guestName.value || '').trim();
+      if (!n) { guestMsg.textContent = 'Please enter a name.'; return; }
+      btnGuest.disabled = true; btnGuest.textContent = 'Checking…';
+      const ok = await validateName(n);
+      if (!ok) {
+        guestMsg.textContent = 'That name is not allowed. Try another.';
+        btnGuest.disabled = false; btnGuest.textContent = 'Continue';
+        return;
+      }
+      NG.setName(n);
+      location.href = 'topics.html';
+    });
+
+    // Sign in / up
+    const siEmail = document.getElementById('siEmail');
+    const siPass  = document.getElementById('siPass');
+    const btnSignIn = document.getElementById('btnSignIn');
+    const btnSignOut = document.getElementById('btnSignOut');
+    const btnContinueAs = document.getElementById('btnContinueAs');
+    const signedInName = document.getElementById('signedInName');
+    const siMsg = document.getElementById('siMsg');
+
+    const suName = document.getElementById('suName');
+    const suEmail= document.getElementById('suEmail');
+    const suPass = document.getElementById('suPass');
+    const btnSignUp = document.getElementById('btnSignUp');
+    const suMsg = document.getElementById('suMsg');
+
+    // If already signed in, show continue/sign out
+    (async () => {
+      try {
+        const r = await fetch('/api/auth/me');
+        const j = await r.json();
+        if (j && j.user) {
+          signedInName.textContent = j.user.displayName;
+          btnContinueAs.classList.remove('hidden');
+          btnSignOut.classList.remove('hidden');
+        }
+      } catch {}
+    })();
+
+    btnContinueAs.addEventListener('click', () => {
+      const n = signedInName.textContent.trim();
+      if (n) NG.setName(n);
+      location.href = 'topics.html';
+    });
+
+    btnSignOut.addEventListener('click', async () => {
+      try { await fetch('/api/auth/logout', { method:'POST' }); } catch {}
+      NG.clearName();
+      btnContinueAs.classList.add('hidden');
+      btnSignOut.classList.add('hidden');
+      siMsg.textContent = 'Signed out.';
+    });
+
+    btnSignIn.addEventListener('click', async () => {
+      siMsg.textContent = '';
+      const email = (siEmail.value || '').trim().toLowerCase();
+      const pass  = (siPass.value || '');
+      if (!email || !pass) { siMsg.textContent = 'Enter email and password.'; return; }
+      btnSignIn.disabled = true; btnSignIn.textContent = 'Signing in…';
+      try {
+        const r = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password: pass })
+        });
+        const j = await r.json();
+        if (!j || !j.ok) throw new Error(j && j.error || 'Could not sign in.');
+        NG.setName(j.user.displayName);
+        location.href = 'topics.html';
+      } catch (e) {
+        siMsg.textContent = e.message || 'Could not sign in.';
+      } finally {
+        btnSignIn.disabled = false; btnSignIn.textContent = 'Sign in';
+      }
+    });
+
+    btnSignUp.addEventListener('click', async () => {
+      suMsg.textContent = '';
+      const name = (suName.value || '').trim();
+      const email= (suEmail.value|| '').trim().toLowerCase();
+      const pass = (suPass.value || '');
+      if (!name || !email || !pass) { suMsg.textContent = 'Fill all fields.'; return; }
+
+      btnSignUp.disabled = true; btnSignUp.textContent = 'Creating…';
+      try {
+        // Check name allowed first
+        const okName = await validateName(name);
+        if (!okName) { throw new Error('That display name is not allowed.'); }
+
+        const r = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password: pass, displayName: name })
+        });
+        const j = await r.json();
+        if (!j || !j.ok) throw new Error(j && j.error || 'Could not sign up.');
+        NG.setName(j.user.displayName);
+        location.href = 'topics.html';
+      } catch (e) {
+        suMsg.textContent = e.message || 'Could not sign up.';
+      } finally {
+        btnSignUp.disabled = false; btnSignUp.textContent = 'Create account';
+      }
+    });
+
+    // Back
+    document.getElementById('btnBack').addEventListener('click', () => history.back());
+  </script>
+</body>
+</html>

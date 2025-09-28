@@ -8,8 +8,11 @@
     "build:data": "node public/scripts/fetch-data.js"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "cheerio": "^1.0.0-rc.12",
     "express": "^4.19.2",
+    "express-session": "^1.18.2",
+    "leo-profanity": "^1.8.0",
     "socket.io": "^4.7.5"
   }
 }

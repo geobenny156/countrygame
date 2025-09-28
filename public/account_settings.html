@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Naming Game — Account Settings</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .grid2 { display:grid; gap:12px; grid-template-columns: 1fr; }
+    @media (min-width: 820px){ .grid2 { grid-template-columns: 1fr 1fr; } }
+    .danger { border-color: #7f1d1d !important; }
+    .muted { color: var(--muted); }
+    .ok    { color: #86efac; }
+    .err   { color: #fda4af; }
+    .spacer{ height: 8px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Account Settings</h1>
+      <p class="subtitle">Manage your profile, email, password, and data.</p>
+    </header>
+
+    <section class="card" id="authGate">
+      <p id="gateMsg">Checking your session…</p>
+      <div class="row" style="gap:10px; margin-top:8px;">
+        <a href="account.html" class="secondary" id="goSignIn" style="display:none;">Sign in</a>
+      </div>
+    </section>
+
+    <section class="card hidden" id="settings">
+      <div class="grid2">
+        <!-- Profile -->
+        <div class="card">
+          <h3>Profile</h3>
+          <div class="spacer"></div>
+          <label>Display name</label>
+          <input id="nameInput" type="text" maxlength="24" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"/>
+          <div class="row" style="gap:8px; margin-top:8px;">
+            <button id="btnSaveName" class="primary">Save name</button>
+            <span id="nameMsg" class="muted"></span>
+          </div>
+
+          <div class="spacer"></div><div class="spacer"></div>
+          <div class="muted">Signed in as: <strong id="emailLabel">—</strong></div>
+        </div>
+
+        <!-- Email -->
+        <div class="card">
+          <h3>Change email</h3>
+          <div class="spacer"></div>
+          <label>New email</label>
+          <input id="emailInput" type="email" placeholder="you@example.com"/>
+          <label style="margin-top:8px;">Current password</label>
+          <input id="emailPass" type="password" placeholder="••••••••"/>
+          <div class="row" style="gap:8px; margin-top:8px;">
+            <button id="btnSaveEmail" class="primary">Save email</button>
+            <span id="emailMsg" class="muted"></span>
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="card">
+          <h3>Change password</h3>
+          <div class="spacer"></div>
+          <label>Current password</label>
+          <input id="pwCurrent" type="password" placeholder="••••••••"/>
+          <label style="margin-top:8px;">New password <small>(min 6)</small></label>
+          <input id="pwNew" type="password" placeholder="••••••••"/>
+          <label style="margin-top:8px;">Confirm new password</label>
+          <input id="pwConfirm" type="password" placeholder="••••••••"/>
+          <div class="row" style="gap:8px; margin-top:8px;">
+            <button id="btnSavePw" class="primary">Update password</button>
+            <span id="pwMsg" class="muted"></span>
+          </div>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="card danger">
+          <h3>Danger zone</h3>
+          <p class="muted">Delete your account and all associated data (scores & custom topics). This cannot be undone.</p>
+          <label>Type <strong>DELETE</strong> to confirm</label>
+          <input id="delConfirm" type="text" placeholder="DELETE"/>
+          <label style="margin-top:8px;">Enter your password</label>
+          <input id="delPass" type="password" placeholder="••••••••"/>
+          <div class="row" style="gap:8px; margin-top:8px;">
+            <button id="btnDelete" class="secondary">Delete my account</button>
+            <span id="delMsg" class="muted"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row" style="gap:10px; margin-top:14px;">
+        <a href="account.html" class="secondary">← Account</a>
+        <a href="topics.html" class="secondary">Go to Topics</a>
+      </div>
+    </section>
+  </div>
+
+  <script src="js/nav.js"></script>
+  <script>
+    const authGate   = document.getElementById('authGate');
+    const gateMsg    = document.getElementById('gateMsg');
+    const goSignIn   = document.getElementById('goSignIn');
+    const settings   = document.getElementById('settings');
+
+    const nameInput  = document.getElementById('nameInput');
+    const btnSaveName= document.getElementById('btnSaveName');
+    const nameMsg    = document.getElementById('nameMsg');
+
+    const emailLabel = document.getElementById('emailLabel');
+    const emailInput = document.getElementById('emailInput');
+    const emailPass  = document.getElementById('emailPass');
+    const btnSaveEmail = document.getElementById('btnSaveEmail');
+    const emailMsg   = document.getElementById('emailMsg');
+
+    const pwCurrent  = document.getElementById('pwCurrent');
+    const pwNew      = document.getElementById('pwNew');
+    const pwConfirm  = document.getElementById('pwConfirm');
+    const btnSavePw  = document.getElementById('btnSavePw');
+    const pwMsg      = document.getElementById('pwMsg');
+
+    const delConfirm = document.getElementById('delConfirm');
+    const delPass    = document.getElementById('delPass');
+    const btnDelete  = document.getElementById('btnDelete');
+    const delMsg     = document.getElementById('delMsg');
+
+    // Gate: must be signed in
+    (async () => {
+      try {
+        const r = await fetch('/api/auth/me');
+        const j = await r.json();
+        if (!j || !j.user) {
+          gateMsg.textContent = 'You are not signed in.';
+          goSignIn.style.display = '';
+          return;
+        }
+        // Show settings
+        authGate.classList.add('hidden');
+        settings.classList.remove('hidden');
+
+        // Prefill
+        nameInput.value = j.user.displayName || '';
+        emailLabel.textContent = j.user.email || '—';
+      } catch {
+        gateMsg.textContent = 'Could not verify session.';
+      }
+    })();
+
+    // Change name
+    btnSaveName.addEventListener('click', async () => {
+      nameMsg.textContent = '';
+      const displayName = (nameInput.value || '').trim();
+      if (!displayName) { nameMsg.textContent = 'Enter a name.'; return; }
+      btnSaveName.disabled = true; btnSaveName.textContent = 'Saving…';
+      try {
+        const r = await fetch('/api/account/name', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ displayName })
+        });
+        const j = await r.json();
+        if (!j || !j.ok) throw new Error(j && j.error || 'Could not update name.');
+        nameMsg.textContent = 'Saved.'; nameMsg.className = 'ok';
+        // Keep local name in sync with gameplay pages
+        try { NG.setName(j.user.displayName); } catch {}
+      } catch (e) {
+        nameMsg.textContent = e.message || 'Error.'; nameMsg.className = 'err';
+      } finally {
+        btnSaveName.disabled = false; btnSaveName.textContent = 'Save name';
+      }
+    });
+
+    // Change email
+    btnSaveEmail.addEventListener('click', async () => {
+      emailMsg.textContent = '';
+      const email = (emailInput.value || '').trim().toLowerCase();
+      const password = (emailPass.value || '');
+      if (!email || !password) { emailMsg.textContent = 'Enter new email and your current password.'; return; }
+      btnSaveEmail.disabled = true; btnSaveEmail.textContent = 'Saving…';
+      try {
+        const r = await fetch('/api/account/email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const j = await r.json();
+        if (!j || !j.ok) throw new Error(j && j.error || 'Could not update email.');
+        emailMsg.textContent = 'Email updated.'; emailMsg.className = 'ok';
+        emailLabel.textContent = j.user.email || email;
+        emailInput.value = ''; emailPass.value = '';
+      } catch (e) {
+        emailMsg.textContent = e.message || 'Error.'; emailMsg.className = 'err';
+      } finally {
+        btnSaveEmail.disabled = false; btnSaveEmail.textContent = 'Save email';
+      }
+    });
+
+    // Change password
+    btnSavePw.addEventListener('click', async () => {
+      pwMsg.textContent = '';
+      const currentPassword = (pwCurrent.value || '');
+      const newPassword = (pwNew.value || '');
+      const confirm = (pwConfirm.value || '');
+      if (!currentPassword || !newPassword || !confirm) { pwMsg.textContent='Fill all fields.'; return; }
+      if (newPassword.length < 6) { pwMsg.textContent='Password must be at least 6 characters.'; return; }
+      if (newPassword !== confirm) { pwMsg.textContent='Passwords do not match.'; return; }
+      btnSavePw.disabled = true; btnSavePw.textContent = 'Saving…';
+      try {
+        const r = await fetch('/api/account/password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ currentPassword, newPassword })
+        });
+        const j = await r.json();
+        if (!j || !j.ok) throw new Error(j && j.error || 'Could not update password.');
+        pwMsg.textContent = 'Password updated.'; pwMsg.className = 'ok';
+        pwCurrent.value = ''; pwNew.value=''; pwConfirm.value='';
+      } catch (e) {
+        pwMsg.textContent = e.message || 'Error.'; pwMsg.className = 'err';
+      } finally {
+        btnSavePw.disabled = false; btnSavePw.textContent = 'Update password';
+      }
+    });
+
+    // Delete account
+    btnDelete.addEventListener('click', async () => {
+      delMsg.textContent = '';
+      const confirmText = (delConfirm.value || '').trim();
+      const password = (delPass.value || '');
+      if (confirmText !== 'DELETE') { delMsg.textContent='Type DELETE to confirm.'; return; }
+      if (!password) { delMsg.textContent='Enter your password.'; return; }
+      if (!confirm('This will permanently delete your account and data. Continue?')) return;
+
+      btnDelete.disabled = true; btnDelete.textContent = 'Deleting…';
+      try {
+        const r = await fetch('/api/account', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password, confirm: confirmText })
+        });
+        const j = await r.json();
+        if (!j || !j.ok) throw new Error(j && j.error || 'Could not delete account.');
+        // Clear local name used by gameplay pages
+        try { NG.clearName(); } catch {}
+        alert('Account deleted. Bye for now!');
+        location.href = 'index.html';
+      } catch (e) {
+        delMsg.textContent = e.message || 'Error.'; delMsg.className = 'err';
+      } finally {
+        btnDelete.disabled = false; btnDelete.textContent = 'Delete my account';
+      }
+    });
+  </script>
+</body>
+</html>

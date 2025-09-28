@@ -5,116 +5,113 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Naming Game — Rules</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .grid2 { display:grid; gap:12px; grid-template-columns: 1fr; }
+    @media (min-width: 760px){ .grid2 { grid-template-columns: 1fr 1fr; } }
+    .muted-small{ font-size:.9rem; opacity:.8; }
+  </style>
 </head>
 <body>
   <div class="app">
-    <header>
-      <h1>Set the Rules</h1>
-      <p class="subtitle">Topic: <span id="topicLabel">—</span></p>
+    <header class="row" style="justify-content:space-between; align-items:flex-end;">
+      <div>
+        <h1>Set the Rules</h1>
+        <p class="subtitle">Configure the match, then start playing.</p>
+      </div>
+      <!-- Accounts action (My Account or Sign In/Sign Up) -->
+      <div id="accountActions" class="row" style="gap:8px;"></div>
     </header>
 
     <section class="card">
-      <div class="columns">
+      <div class="grid2">
         <div>
-          <h3>Mode</h3>
-          <div class="row" style="gap:14px; flex-wrap: wrap;">
-            <label><input type="radio" name="mode" value="solo" /> Solo</label>
-            <label><input type="radio" name="mode" value="pvp" checked /> Multiplayer (Quick Match)</label>
-            <label><input type="radio" name="mode" value="private" /> Private Room (Friends)</label>
+          <label>Mode</label>
+          <div class="row" style="gap:10px; flex-wrap:wrap;">
+            <label><input type="radio" name="mode" value="solo"   checked> Solo</label>
+            <label><input type="radio" name="mode" value="pvp"> Multiplayer (quick match)</label>
+            <label><input type="radio" name="mode" value="private"> Private room</label>
           </div>
 
-          <label style="margin-top:14px;">Seconds per answer</label>
-          <input id="secondsInput" type="number" min="5" max="120" value="15" />
-
-          <div id="quickMatchOptions">
-            <label style="margin-top:14px;">Opponents (how many to face)</label>
-            <input id="opponentsInput" type="number" min="1" max="7" value="3" />
+          <div id="opponentsRow" style="margin-top:8px;">
+            <label>Number of opponents (for multiplayer)</label>
+            <input id="opponents" type="number" min="1" max="7" value="1" />
           </div>
 
-          <div id="privateOptions" class="hidden">
-            <h3 style="margin-top:14px;">Private Room</h3>
-            <div class="row" style="gap:14px;">
-              <label><input type="radio" name="privRole" value="create" checked /> Create a room</label>
-              <label><input type="radio" name="privRole" value="join" /> Join a room</label>
+          <div id="privateWrap" class="hidden" style="margin-top:8px;">
+            <label>Private room</label>
+            <div class="row" style="gap:10px; flex-wrap:wrap;">
+              <label><input type="radio" name="prv" value="create" checked> Create room</label>
+              <label><input type="radio" name="prv" value="join"> Join room</label>
             </div>
-            <label id="lblCode" class="hidden">Room code</label>
-            <input id="roomCodeInput" type="text" maxlength="6" placeholder="ABC123" class="hidden" />
-          </div>
-
-          <div class="row" style="margin-top:14px;">
-            <button id="start" class="primary">Continue →</button>
-            <button id="backTopics" class="secondary">← Back</button>
+            <div id="joinCodeRow" class="hidden" style="margin-top:8px;">
+              <label>Enter room code</label>
+              <input id="roomCode" type="text" placeholder="e.g., ABC123" maxlength="6" />
+            </div>
+            <p class="muted-small">Share the room code with friends to join.</p>
           </div>
         </div>
 
         <div>
-          <h3>How to play</h3>
-          <p class="hint">
-            No repeats. Inputs are accent-insensitive and include common aliases.
-            <br/>Solo: each correct answer resets the timer; game ends when you run out of time.
-            <br/>Quick Match: players are auto-matched by settings; timeout eliminates a player; winner decided at round ends.
-            <br/>Private Room: share a 6‑letter code; host presses Start when ready; you can return to the lobby for rematches.
-          </p>
+          <label>Per-turn timer (seconds)</label>
+          <input id="perTurn" type="number" min="5" max="120" value="15" />
+          <p class="muted-small">Shorter timers make it harder to look things up.</p>
+
+          <div class="row" style="gap:10px; margin-top:14px;">
+            <button id="btnContinue" class="primary">Start</button>
+          </div>
         </div>
       </div>
     </section>
   </div>
 
   <script src="js/nav.js"></script>
+  <script src="js/auth_overlay.js"></script>
   <script>
-    NG.requireNameOrRedirect('index.html');
+    NG.requireNameOrRedirect('account.html');
     NG.requireTopicOrRedirect('topics.html');
 
-    const topicLabel = document.getElementById('topicLabel');
-    topicLabel.textContent = NG.getTopicLabel();
+    const perTurn = document.getElementById('perTurn');
+    const opponents = document.getElementById('opponents');
+    const opponentsRow = document.getElementById('opponentsRow');
+    const privateWrap = document.getElementById('privateWrap');
+    const joinCodeRow = document.getElementById('joinCodeRow');
+    const roomCode = document.getElementById('roomCode');
+    const btnContinue = document.getElementById('btnContinue');
 
-    const secondsInput = document.getElementById('secondsInput');
-    const opponentsInput = document.getElementById('opponentsInput');
-    const start = document.getElementById('start');
-    const backTopics = document.getElementById('backTopics');
+    const modeRadios = Array.from(document.querySelectorAll('input[name="mode"]'));
+    const prvRadios  = () => Array.from(document.querySelectorAll('input[name="prv"]'));
 
-    const quickMatchOptions = document.getElementById('quickMatchOptions');
-    const privateOptions = document.getElementById('privateOptions');
-    const roomCodeInput = document.getElementById('roomCodeInput');
-    const lblCode = document.getElementById('lblCode');
-
-    function mode() { return document.querySelector('input[name="mode"]:checked').value; }
-    function privRole() { return document.querySelector('input[name="privRole"]:checked')?.value || 'create'; }
-
-    function syncVisibility() {
-      const m = mode();
-      quickMatchOptions.classList.toggle('hidden', m !== 'pvp');
-      privateOptions.classList.toggle('hidden', m !== 'private');
-      const join = m === 'private' && privRole() === 'join';
-      roomCodeInput.classList.toggle('hidden', !join);
-      lblCode.classList.toggle('hidden', !join);
+    function updateVisibility() {
+      const mode = (modeRadios.find(r => r.checked) || {}).value || 'solo';
+      opponentsRow.classList.toggle('hidden', mode !== 'pvp');
+      privateWrap.classList.toggle('hidden', mode !== 'private');
+      joinCodeRow.classList.toggle('hidden', !(mode === 'private' && (prvRadios().find(r => r.checked)?.value === 'join')));
     }
+    modeRadios.forEach(r => r.addEventListener('change', updateVisibility));
+    document.querySelectorAll('input[name="prv"]').forEach(r => r.addEventListener('change', updateVisibility));
+    updateVisibility();
 
-    document.querySelectorAll('input[name="mode"]').forEach(r => r.addEventListener('change', syncVisibility));
-    document.querySelectorAll('input[name="privRole"]').forEach(r => r.addEventListener('change', syncVisibility));
-    syncVisibility();
-
-    backTopics.addEventListener('click', () => history.back());
-    start.addEventListener('click', () => {
-      const m = mode();
-      const perTurn = Number(secondsInput.value || 15);
-      const opponents = Number(opponentsInput.value || 3);
-      const role = privRole();
-      const roomCode = (roomCodeInput.value || '').toUpperCase().trim();
-
-      if (m === 'private' && role === 'join' && (!roomCode || roomCode.length < 4)) {
-        alert('Please enter a valid room code.'); return;
+    btnContinue.addEventListener('click', () => {
+      const mode = (modeRadios.find(r => r.checked) || {}).value || 'solo';
+      const secs = Math.max(5, Math.min(120, Number(perTurn.value || 15)));
+      if (mode === 'solo') {
+        NG.setRules({ mode:'solo', perTurn: secs });
+        location.href = 'play.html';
+      } else if (mode === 'pvp') {
+        const opp = Math.max(1, Math.min(7, Number(opponents.value || 1)));
+        NG.setRules({ mode:'pvp', perTurn: secs, opponents: opp });
+        location.href = 'play.html';
+      } else {
+        const action = (prvRadios().find(r => r.checked) || {}).value || 'create';
+        if (action === 'join') {
+          const code = String(roomCode.value || '').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);
+          if (!code) { alert('Enter a room code to join.'); return; }
+          NG.setRules({ mode:'private', perTurn: secs, roomAction:'join', roomCode: code });
+        } else {
+          NG.setRules({ mode:'private', perTurn: secs, roomAction:'create' });
+        }
+        location.href = 'play.html';
       }
-
-      NG.setRules({
-        mode: m,
-        perTurn,
-        opponents,
-        roomAction: (m === 'private') ? role : '',
-        roomCode: (m === 'private' && role === 'join') ? roomCode : ''
-      });
-
-      location.href = 'play.html';
     });
   </script>
 </body>

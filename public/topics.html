@@ -5,38 +5,154 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Naming Game — Topics</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .topics-grid{
+      display:grid; gap:12px;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+    .topic-tile{
+      border:1px solid var(--border);
+      background: var(--panel);
+      border-radius: 12px;
+      padding:14px;
+      cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      text-align:center; min-height:70px;
+      user-select:none;
+    }
+    .topic-tile:hover{ border-color: var(--border); background: var(--panel); } /* no white hover */
+    .topic-tile .small { font-size: .9rem; opacity: .8; }
+    #customForm.hidden{ display:none !important; }
+    #customList .item{
+      display:flex; justify-content:space-between; align-items:center;
+      border:1px solid var(--border); background: #0b1220; border-radius:10px; padding:8px 10px; margin-top:8px;
+    }
+  </style>
 </head>
 <body>
   <div class="app">
-    <header>
-      <h1>Select a Topic</h1>
-      <p class="subtitle">Choose what you’ll be naming.</p>
+    <header class="row" style="justify-content:space-between; align-items:flex-end;">
+      <div>
+        <h1>Pick a Topic</h1>
+        <p class="subtitle">Choose what to play.</p>
+      </div>
+      <!-- Accounts action (My Account or Sign In/Sign Up) -->
+      <div id="accountActions" class="row" style="gap:8px;"></div>
     </header>
 
     <section class="card">
-      <div class="grid" id="topicGrid">
-        <div class="tile" data-key="countries" data-label="Countries">🌍 Countries</div>
-        <div class="tile" data-key="capitals" data-label="Capitals">🏛️ Capitals</div>
-        <div class="tile" data-key="currencies" data-label="Currencies">💱 Currencies</div>
-        <div class="tile" data-key="dog_breeds" data-label="Dog Breeds">🐶 Dog Breeds</div>
-      </div>
-      <div class="row" style="margin-top:12px;">
-        <button id="backHome" class="secondary">← Back</button>
+      <div id="topics" class="topics-grid"></div>
+
+      <!-- Custom topics -->
+      <div id="customWrap" class="card" style="margin-top:14px;">
+        <div class="topic-tile" id="customToggle" style="justify-content:space-between;">
+          <div><strong>Custom Topics</strong><div class="small">Play community topics or add your own</div></div>
+          <span id="ctChevron">▾</span>
+        </div>
+
+        <div id="customForm" class="hidden" style="margin-top:10px;">
+          <h3 style="margin:10px 0;">Add new custom topic</h3>
+          <label>Title</label>
+          <input id="ctTitle" type="text" placeholder="e.g., UK Counties" maxlength="40" />
+          <label style="margin-top:8px;">Acceptable answers (one per line)</label>
+          <textarea id="ctAnswers" rows="6" placeholder="Answer 1&#10;Answer 2&#10;Answer 3"></textarea>
+          <div class="row" style="gap:8px; margin-top:8px;">
+            <button id="ctCreate" class="primary">Create topic</button>
+            <span id="ctMsg" class="hint" style="min-height:18px;"></span>
+          </div>
+
+          <h3 style="margin:14px 0 8px;">Available custom topics</h3>
+          <div id="customList"></div>
+        </div>
       </div>
     </section>
   </div>
 
   <script src="js/nav.js"></script>
+  <script src="js/auth_overlay.js"></script>
   <script>
-    NG.requireNameOrRedirect('index.html');
-    document.getElementById('backHome').addEventListener('click', () => history.back());
+    NG.requireNameOrRedirect('account.html');
 
-    document.getElementById('topicGrid').addEventListener('click', (e) => {
-      const tile = e.target.closest('.tile');
-      if (!tile) return;
-      NG.setTopic(tile.dataset.key, tile.dataset.label);
-      location.href = 'rules.html';
+    const topicsEl = document.getElementById('topics');
+    const customToggle = document.getElementById('customToggle');
+    const customForm   = document.getElementById('customForm');
+    const ctChevron    = document.getElementById('ctChevron');
+
+    const ctTitle   = document.getElementById('ctTitle');
+    const ctAnswers = document.getElementById('ctAnswers');
+    const ctCreate  = document.getElementById('ctCreate');
+    const ctMsg     = document.getElementById('ctMsg');
+    const customList= document.getElementById('customList');
+
+    function tile(label, key) {
+      const div = document.createElement('div');
+      div.className = 'topic-tile';
+      div.textContent = label;
+      div.onclick = () => { NG.setTopic(key, label); location.href = 'rules.html'; };
+      return div;
+    }
+
+    function renderBuiltin(builtin) {
+      topicsEl.innerHTML = '';
+      const order = ['countries','capitals','currencies','dog_breeds','pokemon_gen1','elements','oscars_best_picture','car_brands'];
+      order.forEach(k => {
+        const t = builtin.find(x => x.key === k);
+        if (t) topicsEl.appendChild(tile(t.label, t.key));
+      });
+    }
+
+    function renderCustom(list) {
+      customList.innerHTML = '';
+      if (!list || !list.length) {
+        const p = document.createElement('p'); p.className='hint'; p.textContent='No custom topics yet.';
+        customList.appendChild(p); return;
+      }
+      list.forEach(t => {
+        const row = document.createElement('div'); row.className='item';
+        row.innerHTML = `<div><strong>${t.label}</strong><div class="small">${t.count} answers</div></div>`;
+        const btn = document.createElement('button'); btn.className='secondary'; btn.textContent='Play';
+        btn.onclick = () => { NG.setTopic(t.key, t.label); location.href='rules.html'; };
+        row.appendChild(btn);
+        customList.appendChild(row);
+      });
+    }
+
+    async function loadAll() {
+      try {
+        const r = await fetch('/api/topics/all');
+        const j = await r.json();
+        if (j && j.ok) { renderBuiltin(j.builtin || []); renderCustom(j.custom || []); }
+      } catch {}
+    }
+
+    customToggle.addEventListener('click', () => {
+      const hide = !customForm.classList.contains('hidden');
+      customForm.classList.toggle('hidden', hide);
+      ctChevron.textContent = hide ? '▾' : '▴';
     });
+
+    ctCreate.addEventListener('click', async () => {
+      ctMsg.textContent = '';
+      const title = (ctTitle.value || '').trim();
+      const answers = (ctAnswers.value || '').trim();
+      if (!title || !answers) { ctMsg.textContent='Enter a title and at least 3 answers.'; return; }
+      try {
+        const r = await fetch('/api/topics/custom', {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify({ label: title, itemsText: answers })
+        });
+        const j = await r.json();
+        if (!j || !j.ok) throw new Error(j && j.error || 'Could not create topic.');
+        ctMsg.textContent = 'Topic created!';
+        ctTitle.value=''; ctAnswers.value='';
+        loadAll();
+      } catch (e) {
+        ctMsg.textContent = e.message || 'Error creating topic.';
+      }
+    });
+
+    loadAll();
   </script>
 </body>
 </html>

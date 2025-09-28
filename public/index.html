@@ -9,52 +9,16 @@
 <body>
   <div class="app">
     <header>
-      <h1>🧠 Naming Game</h1>
+      <h1>Naming Game</h1>
       <p class="subtitle">Compete against opponents to answer more.</p>
     </header>
 
-    <section class="card">
-      <form id="homeForm" autocomplete="off" onsubmit="return false;">
-        <label>Your name</label>
-        <input
-          id="nameInput"
-          type="text"
-          placeholder="Enter your name"
-          autocomplete="off"
-          autocapitalize="none"
-          spellcheck="false"
-          autocorrect="off"
-        />
-        <div class="row" style="margin-top:12px;">
-          <button id="playNow" class="primary" type="button">Play Now</button>
-        </div>
-      </form>
+    <section class="card" style="text-align:center;">
+      <p>Race the clock in solo or multiplayer. No repeats. Think fast!</p>
+      <div class="row" style="justify-content:center; gap:10px; margin-top:16px;">
+        <a class="primary" href="account.html">Play Now</a>
+      </div>
     </section>
-
-    <div class="row" style="margin-top:10px;">
-      <button id="about" class="link" type="button">What is this?</button>
-    </div>
   </div>
-
-  <script src="js/nav.js"></script>
-  <script>
-    const nameInput = document.getElementById('nameInput');
-    const playNow = document.getElementById('playNow');
-    const about = document.getElementById('about');
-
-    // Unique 'name' attribute each load to prevent browser autofill history
-    try { nameInput.setAttribute('name', 'player_name_' + Date.now()); } catch {}
-
-    playNow.addEventListener('click', () => {
-      const name = nameInput.value.trim();
-      if (!name) { alert('Please enter your name.'); return; }
-      NG.setName(name);          // sessionStorage (clears when tab closes)
-      location.href = 'topics.html';
-    });
-
-    about.addEventListener('click', () => {
-      alert('Turn-based, accent-insensitive naming game. Pick a topic, choose Solo or Multiplayer, and try to outlast opponents by supplying unique answers before the timer hits 0.');
-    });
-  </script>
 </body>
 </html>

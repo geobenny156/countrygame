@@ -1,66 +1,304 @@
-:root {
-  --bg: #0f172a;
-  --card: #111827;
-  --muted: #9ca3af;
-  --text: #e5e7eb;
-  --accent: #f59e0b;
-  --accent-2: #10b981;
-  --danger: #ef4444;
-  --border: #1f2937;
+/* ===========================
+   Naming Game — Core Styles
+   Dark theme, no white hover/highlights anywhere
+   =========================== */
+
+:root{
+  --bg: #0f172a;          /* slate-900 */
+  --panel: #0b1220;       /* deep panel */
+  --panel-2:#111827;      /* gray-900 */
+  --text: #e5e7eb;        /* slate-200 */
+  --muted: #9ca3af;       /* slate-400 */
+  --border: #334155;      /* slate-700 */
+  --border-soft: #1f2937; /* slate-800 */
+
+  --accent: #38bdf8;      /* sky-400 */
+  --accent-2:#60a5fa;     /* blue-400 */
+  --success:#22c55e;      /* green-500 */
+  --danger: #ef4444;      /* red-500 */
+  --warning:#f59e0b;      /* amber-500 */
+
+  --chip-bg:#0b1a2b;
+  --chip-border:#1e2a3a;
+  --input-bg:#0b1220;
+  --input-border:#1f2a3a;
+  --input-focus:#38bdf8;
 }
 
-* { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+*{box-sizing:border-box}
+html,body{height:100%}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.5;
+}
 
-.app { max-width: 960px; margin: 0 auto; padding: 24px; }
-header { text-align: center; margin-bottom: 16px; }
-h1 { margin: 0 0 4px; font-size: 28px; }
-.subtitle { margin: 0; color: var(--muted); }
+/* Softer selection (no bright white) */
+::selection{ background:rgba(56,189,248,.25); color:var(--text); }
+/* Mobile tap highlight */
+*{ -webkit-tap-highlight-color: rgba(56,189,248,.25); }
 
-.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
-.hidden { display: none !important; }
-.badge { background: #1f2937; padding: 4px 8px; border-radius: 999px; font-size: 12px; color: var(--muted); }
+/* -------- Layout -------- */
+.app{ max-width:960px; margin:0 auto; padding:24px 16px; }
+header h1{ margin:0 0 4px 0; font-size:28px; }
+.subtitle{ margin:0; color:var(--muted) }
 
-.columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-@media (max-width: 800px) { .columns { grid-template-columns: 1fr; } }
+/* Base card/panel */
+.card{
+  background: var(--panel);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:16px;
+  margin-top:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,.35);
+}
 
-label { display: block; margin: 12px 0 6px; font-size: 14px; color: var(--muted); }
-input, select { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: #0b1220; color: var(--text); }
-input[type="number"] { -moz-appearance: textfield; }
-button { padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: #1f2937; color: var(--text); cursor: pointer; }
-button:hover { border-color: var(--accent); }
-button.primary { background: var(--accent); color: #111827; border: none; }
-button.secondary { background: #0b1220; }
-button.link { background: transparent; border: none; text-decoration: underline; color: var(--muted); padding: 0; }
+/* === No hover highlight on any card/outer box === */
+.card:hover,
+.container:hover,
+.panel:hover,
+.content:hover,
+.box:hover,
+.wrapper:hover{
+  background: var(--panel) !important;
+  border-color: var(--border) !important;
+  box-shadow:0 10px 30px rgba(0,0,0,.35) !important;
+}
 
-.row { display: flex; gap: 8px; align-items: center; }
-.spacer { flex: 1; }
+/* -------- Utility -------- */
+.row{ display:flex; gap:10px; align-items:center; }
+.hidden{ display:none !important; }
+.hint{ color:var(--muted); font-size:14px; }
 
-.grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
-.tile { border: 1px solid var(--border); border-radius: 12px; padding: 14px; text-align: center; cursor: pointer; background: #0b1220; }
-.tile:hover { outline: 2px solid var(--accent); }
+/* -------- Inputs -------- */
+input[type="text"], input[type="number"], input[type="email"], input[type="password"], textarea, select{
+  width:100%;
+  padding:10px 12px;
+  border-radius:8px;
+  background:var(--input-bg);
+  color:var(--text);
+  border:1px solid var(--input-border);
+  outline:none;
+  transition:border-color .15s, box-shadow .15s;
+}
+input::placeholder, textarea::placeholder{ color:#7c8799; }
+input:focus, textarea:focus, select:focus{
+  border-color:var(--input-focus);
+  box-shadow:0 0 0 3px rgba(56,189,248,.25);
+}
 
-.roombar { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
-.left, .right { }
+/* Chrome autofill (prevent white/yellow fill) */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus{
+  -webkit-text-fill-color: var(--text);
+  -webkit-box-shadow: 0 0 0px 1000px var(--input-bg) inset;
+  box-shadow: 0 0 0px 1000px var(--input-bg) inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
 
-ul#players { list-style: none; padding-left: 0; margin: 0; display: grid; gap: 6px; }
-ul#players li { display: flex; justify-content: space-between; gap: 8px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: #0b1220; }
-ul#players li.current { background: #1f2937; outline: 2px solid var(--accent); }
-ul#players .name.you::after { content: " (You)"; color: var(--muted); }
+/* -------- Buttons -------- */
+button{
+  appearance:none;
+  border:1px solid var(--border);
+  background:var(--panel-2);
+  color:var(--text);
+  padding:10px 14px;
+  border-radius:10px;
+  font-weight:600;
+  cursor:pointer;
+  transition:transform .02s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+button:hover{ background:#0d1627; border-color:#3b4a61; }
+button:active{ transform:translateY(1px); }
+button.primary{
+  background:linear-gradient(180deg, rgba(56,189,248,.15), rgba(56,189,248,.10)), #08222f;
+  border-color:#1b8db6; color:#dff6ff;
+}
+button.primary:hover{
+  background:linear-gradient(180deg, rgba(56,189,248,.22), rgba(56,189,248,.12)), #0a2635;
+  border-color:#2aa6d0; box-shadow:0 0 0 3px rgba(56,189,248,.22);
+}
+button.secondary{ background:#0b1220; border-color:#2a364a; color:#cbd5e1; }
+button.link{ border:none; background:transparent; color:var(--accent); padding:0; }
+button.link:hover{ text-decoration:underline; }
 
-.turnbox { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: #0b1220; }
-.timer { font-size: 28px; font-weight: 700; }
+/* -------- Links (no white hover backgrounds) -------- */
+a{ color:var(--accent); text-decoration:none; }
+a:hover, a:focus{ color:#bfe9ff; background:transparent !important; }
 
-.answer { display: flex; gap: 8px; margin-top: 12px; }
-.hint { color: var(--muted); font-size: 12px; margin-top: 6px; }
+/* =====================================================
+   TOPICS PAGE — remove ANY white hover on tiles/options
+   ===================================================== */
 
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip { padding: 6px 10px; background: #0b1220; border: 1px solid var(--border); border-radius: 999px; }
+/* If your topics are wrapped, these catch most markup */
+:where(#topics, .topics) :is(li, a, button, label, .topic, .topic-card, .topic-tile, .topic-option, .card){
+  background: var(--panel) !important;
+  border:1px solid var(--border) !important;
+  border-radius:10px !important;
+  color:var(--text) !important;
+}
 
-.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.66); display: flex; align-items: center; justify-content: center; z-index: 999; }
-.overlay .overlay-card { width: min(520px, 100% - 32px); background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
-.overlay .overlay-card h2 { margin-top: 0; }
+/* Kill hover/focus/active white */
+:where(#topics, .topics) :is(li, a, button, label, .topic, .topic-card, .topic-tile, .topic-option, .card):hover,
+:where(#topics, .topics) :is(li, a, button, label, .topic, .topic-card, .topic-tile, .topic-option, .card):active,
+:where(#topics, .topics) :is(li, a, button, label, .topic, .topic-card, .topic-tile, .topic-option, .card):focus{
+  background: var(--panel) !important;
+  border-color: var(--border) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
 
-.board { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
-.board li { padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: #0b1220; }
-.board li.winner { outline: 2px solid var(--accent-2); }
+/* If your markup isn’t wrapped, these global fallbacks still prevent white */
+.topic, .topic-card, .topic-tile, .topic-option,
+#topicsList li, #topicsGrid .topic {
+  background: var(--panel) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+}
+.topic:hover, .topic-card:hover, .topic-tile:hover, .topic-option:hover,
+#topicsList li:hover, #topicsGrid .topic:hover,
+.topic:active, .topic-card:active, .topic-tile:active, .topic-option:active,
+#topicsList li:active, #topicsGrid .topic:active,
+.topic:focus, .topic-card:focus, .topic-tile:focus, .topic-option:focus,
+#topicsList li:focus, #topicsGrid .topic:focus {
+  background: var(--panel) !important;
+  border-color: var(--border) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Keep keyboard accessibility — show only on keyboard focus */
+:focus{ outline: none; }
+:focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* If you use radio inputs with labels for topics, keep selected dark (no white) */
+input[type="radio"][name="topic"] + label{
+  background: var(--panel) !important;
+  border:1px solid var(--border) !important;
+  color:var(--text) !important;
+}
+input[type="radio"][name="topic"]:checked + label{
+  background: linear-gradient(0deg, rgba(14,165,233,.10), rgba(14,165,233,.10)), var(--panel) !important;
+  border-color: var(--accent) !important;
+}
+
+/* -------- Chips -------- */
+.chip{
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:999px;
+  background:var(--chip-bg);
+  border:1px solid var(--chip-border);
+  color:#c7d2fe;
+  margin:4px 6px 0 0;
+  font-size:13px;
+}
+
+/* -------- Players panel (dark, no white) -------- */
+#players{ list-style:none; padding-left:0; margin:0; }
+#players li{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px;
+  padding:8px 10px;
+  margin:6px 0;
+  border-radius:10px;
+  background: var(--panel) !important;
+  border:1px solid var(--border-soft);
+}
+#players li.current{
+  border-color:var(--accent) !important;
+  box-shadow:0 0 0 2px rgba(56,189,248,.25) inset;
+  background: linear-gradient(0deg, rgba(14,165,233,.10), rgba(14,165,233,.10)), var(--panel) !important;
+}
+#players li .name{ background:transparent !important; }
+#players .name{ font-weight:700; letter-spacing:.2px; }
+#players .name.you{ color:var(--accent-2); }
+#players .name.alive{ color:#e2e8f0; }
+#players .name.dead{ color:#9aa4b3; text-decoration:line-through; }
+
+/* Header player tag (top-left) — no white pill */
+#playerName,
+header .player,
+header .badge{
+  background:transparent !important;
+  border:none !important;
+}
+
+/* -------- Gameplay header bits -------- */
+#currentName{ font-weight:700; color:#e2e8f0; background:transparent !important; }
+#timer{ font-variant-numeric: tabular-nums; font-weight:700; }
+
+/* -------- Results Overlay (no white anywhere) -------- */
+#resultOverlay{
+  position:fixed; inset:0; z-index:1000;
+  display:flex; align-items:center; justify-content:center;
+  padding:24px;
+  background:rgba(2,6,23,.86) !important;  /* deep slate dimmer */
+}
+/* Remove any inner white backgrounds */
+#resultOverlay *{
+  background-color: transparent !important;
+  background-image: none !important;
+}
+/* Inner panel — explicitly dark */
+#resultOverlay .panel,
+#resultOverlay .card,
+#resultOverlay .content,
+#resultOverlay .modal,
+#resultOverlay .box,
+#resultOverlay .inner,
+#resultOverlay > div{
+  background: var(--panel) !important;
+  border:1px solid var(--border) !important;
+  border-radius:14px !important;
+  width:min(640px, 100%);
+  padding:20px 18px;
+  box-shadow:0 20px 50px rgba(0,0,0,.6);
+  color:var(--text) !important;
+}
+
+#resultOverlay h2, #resultOverlay h3, #resultOverlay p{ margin:6px 0; }
+#resultOverlay h2{ font-size:24px; }
+
+/* Scoreboard list */
+.board{ list-style:none; padding-left:0; margin:10px 0 0 0; }
+.board li{
+  padding:8px 10px; border-radius:10px; margin:6px 0;
+  background:#0c1222 !important; border:1px solid #1f2a3a !important; color:#e5e7eb !important;
+}
+.board li.winner{
+  border-color:var(--success) !important;
+  box-shadow:0 0 0 2px rgba(34,197,94,.25) inset;
+}
+
+/* -------- Tables (if any) -------- */
+table{ width:100%; border-collapse:separate; border-spacing:0; }
+th, td{ padding:10px 12px; border-bottom:1px solid var(--border-soft); }
+th{ text-align:left; color:#cbd5e1; }
+
+/* -------- Misc -------- */
+label{ display:block; margin:8px 0 6px; }
+small, .muted{ color:var(--muted); }
+hr{ border:none; height:1px; background:var(--border-soft); margin:12px 0; }
+
+/* -------- Room code wrap -------- */
+#roomCodeWrap{
+  display:flex; align-items:center; gap:10px;
+  padding:10px; border:1px dashed var(--border); border-radius:10px;
+  background:#0b1220; color:#cbd5e1;
+}
+#roomCodeLabel{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-weight:700; }
+
+/* Answer hint text under the input */
+#answerHint{ min-height:18px; color:#cbd5e1; }
+
+/* Make inputs/buttons a bit larger on touch */
+@media (pointer:coarse){
+  button{ padding:12px 16px; }
+  input, select, textarea{ padding:12px 14px; }
+}
+

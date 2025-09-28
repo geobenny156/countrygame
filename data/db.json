@@ -1,0 +1,91 @@
+{
+  "users": [
+    {
+      "id": "u_5f6a6ee8",
+      "email": "geobenny27@gmail.com",
+      "displayName": "Geo",
+      "passHash": "$2b$10$LDilEopU.MIRIoMo0kAWb.Q1VJIkAKyIrSDwFO8IC18PqIwpzbnOO",
+      "createdAt": "2025-09-23T18:36:42.729Z"
+    }
+  ],
+  "scores": [
+    {
+      "id": "s_50617f9a",
+      "userId": "u_5f6a6ee8",
+      "mode": "solo",
+      "topicKey": "countries",
+      "score": 4,
+      "outcome": "timeout",
+      "createdAt": "2025-09-23T18:37:21.226Z"
+    },
+    {
+      "id": "s_e901b92d",
+      "userId": "u_5f6a6ee8",
+      "mode": "solo",
+      "topicKey": "currencies",
+      "score": 6,
+      "outcome": "timeout",
+      "createdAt": "2025-09-25T14:30:00.160Z"
+    },
+    {
+      "id": "s_de8fd027",
+      "userId": "u_5f6a6ee8",
+      "mode": "solo",
+      "topicKey": "capitals",
+      "score": 11,
+      "outcome": "timeout",
+      "createdAt": "2025-09-25T14:31:51.812Z"
+    },
+    {
+      "id": "s_10e27fec",
+      "userId": "u_5f6a6ee8",
+      "mode": "pvp",
+      "topicKey": "countries",
+      "score": 2,
+      "outcome": "win",
+      "createdAt": "2025-09-25T14:33:25.577Z"
+    },
+    {
+      "id": "s_fe792dc4",
+      "userId": "u_5f6a6ee8",
+      "mode": "pvp",
+      "topicKey": "countries",
+      "score": 1,
+      "outcome": "loss",
+      "createdAt": "2025-09-25T14:33:25.581Z"
+    },
+    {
+      "id": "s_43e404db",
+      "userId": "u_5f6a6ee8",
+      "mode": "solo",
+      "topicKey": "custom-footballers",
+      "score": 10,
+      "outcome": "timeout",
+      "createdAt": "2025-09-25T19:28:44.675Z"
+    }
+  ],
+  "customTopics": [
+    {
+      "id": "ct_b398c6e5",
+      "key": "custom-footballers",
+      "label": "Footballers",
+      "items": [
+        "Ronaldo",
+        "Messi",
+        "Neymar",
+        "Benzema",
+        "Modric",
+        "Zidane",
+        "Pirlo",
+        "Maldini",
+        "Pepe",
+        "Ramos",
+        "Nueur",
+        "Casemiro"
+      ],
+      "count": 12,
+      "createdBy": null,
+      "createdAt": "2025-09-24T17:11:54.326Z"
+    }
+  ]
+}
